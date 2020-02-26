@@ -1,0 +1,303 @@
+{
+	// Place your snippets for cpp here. Each snippet is defined under a snippet name and has a prefix, body and 
+	// description. The prefix is what is used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. Placeholders with the 
+	// same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	"vector input(int)": {
+		"prefix": "vint",
+		"body":[
+			"$1.resize($2); REP(i, $2) scanf(\"%d\", &$1[i]);",
+		],
+		"description": "std::vector<int>の入力受け取り"
+	},
+	"vector input(long long int)": {
+		"prefix": "vlli",
+		"body":[
+			"$1.resize($2); REP(i, $2) scanf(\"%lld\", &$1[i]);"
+		],
+		"description": "std::vector<long long int>の入力受け取り"
+	},
+	"edge input": {
+		"prefix": "edgeIn",
+		"body":[
+			"// std::vector<std::vector<int>> $1;",
+			"",
+			"${1:Edge}.assign(${2:n}, std::vector<int>(0));",
+			"// 枝の入力受け取り : 1-indexedで入力がくると想定",
+			"for(int _ = 1; _ < $2; ++_){",
+			"    int vx, uy; scanf(\"%d%d\", &vx, &uy); vx--; uy--;",
+			"    $1[vx].push_back(uy); $1[uy].push_back(vx);",
+			"}"
+		],
+		"description": "edgeの入力受け取り"
+	},
+	"BreathFirstSearch": {
+		"prefix": "bfsWithQueue",
+		"body":[
+			"// BFS",
+			"std::queue<int> ${2:Q};",
+			"while(not $2.empty()){",
+			"    int v = $2.front(); $2.pop();",
+			"    for(int nv : ${1:Edge}[v]) if(/*条件式*/){",
+			"        // ここで操作を行う",
+			"        $0",
+			"    }",
+			"}"
+		],
+		"description": "bfsの基本的構造"
+	},
+	"FromLeaf": {
+		"prefix": "FromLeafDoSomething",
+		"body": [
+			"/* 宣言部",
+			"std::vector<int> $1;",
+			"std::vector<int> $3;",
+			"*/",
+			"",
+			"int theRoot = 0; // 根",
+			"${1:Depth}.assign(${2:n}, -1); ${3:ChildSize}.assign($2, 0);",
+			"std::queue<int> ${4:Q};",
+			"// 根からBFSを行って深さと子ノードの数を計算",
+			"$4.push(theRoot); $1[theRoot] = 0;",
+			"while(not $4.empty()){",
+			"    int v = $4.front(); $4.pop();",
+			"    for(int nv : ${5:Edge}[v]) if($1[nv] == -1){",
+			"        $1[nv] = $1[v] + 1; $3[v]++;",
+			"        $4.push(nv);",
+			"    }",
+			"}",
+			"//葉ノードを列挙する",
+			"for(int vertex = 0; vertex < $2; ++vertex) if($3[vertex] == 0){",
+			"    // 葉の初期状態",
+			"    $4.push(vertex);",
+			"}",
+			"// 葉から頂点へのBFS本体",
+			"while(not $4.empty()){",
+			"    int v = $4.front(); $4.pop();",
+			"    for(int par : $5[v]) if($1[par] < $1[v]){",
+			"        // 親ノードへの操作",
+			"        $0",
+			"        $3[par]--; if($3[par] == 0) $4.push(par); // すべての子ノードからの情報が伝搬されるのを待つ",
+			"        break; // 親ノードは高々1つ",
+			"    }",
+			"}"
+		],
+		"description": "葉から根向かって何かを行う (各頂点は根からの情報を得ている)"
+	}
+
+	, "UnionFindTree": {
+		"prefix": "UnionFindTreeGet",
+		"body":[
+			"// UnionFind木構造 : 0-indexed | 0, 1, ..., n-1",
+			"class UnionFindTree{",
+			"private:",
+			"    int n;                    // 要素数",
+			"    int numberOfSets;         // 集合の数",
+			"    std::vector<int> Parent;  // 親のノード",
+			"    std::vector<int> Size;    // 属する集合の大きさ",
+			"public:",
+			"    // コンストラクタ",
+			"    UnionFindTree(int n):n(n), numberOfSets(n){",
+			"        Size.assign(n, 1); Parent.resize(n);",
+			"        for(int i = 0; i < n; ++i) Parent[i] = i;",
+			"    }",
+			"    // 集合の大きさを変更する関数",
+			"    void resize(int sz){",
+			"        n = sz; numberOfSets = n; Size.assign(n, 1); Parent.resize(n);",
+			"        for(int i = 0; i < n; ++i) Parent[i] = i;",
+			"    }",
+			"    // 頂点 vertex の属する根を返す",
+			"    int rootOf(int vertex){",
+			"        // 根が自分自身ならば終了",
+			"        if(Parent[vertex] == vertex) return vertex;",
+			"        // そうでないなら, 親を属する集合の根に付け替える",
+			"        return Parent[vertex] = rootOf(Parent[vertex]);",
+			"    }",
+			"    // 頂点 x, y を併合する : すでに x, yが同じ集合に属しているなら false を返す",
+			"    bool unite(int x, int y){",
+			"        int root_x = rootOf(x);",
+			"        int root_y = rootOf(y);",
+			"        if(root_x == root_y) return false;",
+			"        if(Size[root_x] < Size[root_y]) std::swap(root_x, root_y);",
+			"        Parent[root_y] = root_x; Size[root_x] += Size[root_y]; numberOfSets--;",
+			"        return true;",
+			"    }",
+			"    // 頂点 x, y が同じ集合に属しているかを判定する関数",
+			"    inline bool sameSet(int x, int y){",
+			"        return rootOf(x) == rootOf(y);",
+			"    }",
+			"    // 属している集合の要素数を返す関数",
+			"    inline int setSize(int vertex){",
+			"        return Size[rootOf(vertex)];",
+			"    }",
+			"    // 集合の数を返す",
+			"    inline int getNumberOfSets(void){",
+			"        return numberOfSets;",
+			"    }",
+			"};"
+		],
+		"description": "UnionFind木"
+	},
+	"combination_mod": {
+		"prefix": "combination_modGet",
+		"body": [
+		  "template <std::size_t N, const int mod>",
+		  "class CombinationMod{",
+		  "public:",
+		  "    long long int Power[N + 1];      // Power[n] := n!",
+		  "    long long int powInverse[N + 1]; // powInverse[n] := 1/n!",
+		  "    long long int Inverse[N + 1];    // Inverse[n] := 1/n",
+		  "    constexpr CombinationMod(void):Power(), powInverse(), Inverse(){",
+		  "        Power[0] = 1; Inverse[0] = 1; powInverse[0] = 1;",
+		  "        for(int x = 1; x <= N; ++x) Power[x] = (Power[x-1] * x) % mod;",
+		  "        powInverse[N] = inverse(Power[N]);",
+		  "        for(int x = N; x - 1 >= 0; --x){",
+		  "            powInverse[x-1] = (powInverse[x] * x) % mod;",
+		  "            Inverse[x] = (Power[x - 1] * powInverse[x]) % mod;",
+		  "        }",
+		  "    }",
+		  "    // 逆元を求める関数",
+		  "    constexpr long long int inverse(long long int a) const noexcept {",
+		  "        long long int b = mod, u = 1, v = 0;",
+		  "        while (b != 0) { ",
+		  "            long long int t = a / b;",
+		  "            a -= t * b; swap(a, b);",
+		  "            u -= t * v; swap(u, v);",
+		  "        }",
+		  "        u %= mod; if (u < 0) u += mod;",
+		  "        return u;",
+		  "    }",
+		  "    constexpr void swap(long long int& a, long long int& b) const {",
+		  "        long long int tmp = a; a = b; b = tmp;",
+		  "    }",
+		  "    // nCkを求める関数 : n < k の入力に注意せよ",
+		  "    inline long long int combination(int n, int k) const noexcept{",
+		  "        if(n < k or k < 0) return 0;",
+		  "        return ((Power[n] * powInverse[k] % mod) * powInverse[n-k]) % mod;",
+		  "    }",
+		  "    // nHk = n+k-1Ck | n種類のものから重複を許して k個 選ぶ場合の組み合わせ(パターン)",
+		  "    // ※ n + k - 1 ≤ N でいけないことに注意",
+		  "    inline long long int repeatedCombination(int n, int k) const noexcept {",
+		  "        return combination(n + k - 1, k);",
+		  "    }",
+		  "};"
+		],
+		"description": "組み合わせをconstexprで前処理を行う構造体"
+	}
+	"UnionFindTree": {
+		"prefix": "UnionFindTreeGet",
+		"body":[
+			"// UnionFind木構造 : 0-indexed | 0, 1, ..., n-1",
+			"class UnionFindTree{",
+			"private:",
+			"    int n;                    // 要素数",
+			"    int numberOfSets;         // 集合の数",
+			"    std::vector<int> Parent;  // 親のノード",
+			"    std::vector<int> Size;    // 属する集合の大きさ",
+			"public:",
+			"    // コンストラクタ",
+			"    UnionFindTree(int n):n(n), numberOfSets(n){",
+			"        Size.assign(n, 1); Parent.resize(n);",
+			"        for(int i = 0; i < n; ++i) Parent[i] = i;",
+			"    }",
+			"    // 集合の大きさを変更する関数",
+			"    void resize(int sz){",
+			"        n = sz; numberOfSets = n; Size.assign(n, 1); Parent.resize(n);",
+			"        for(int i = 0; i < n; ++i) Parent[i] = i;",
+			"    }",
+			"    // 頂点 vertex の属する根を返す",
+			"    int rootOf(int vertex){",
+			"        // 根が自分自身ならば終了",
+			"        if(Parent[vertex] == vertex) return vertex;",
+			"        // そうでないなら, 親を属する集合の根に付け替える",
+			"        return Parent[vertex] = rootOf(Parent[vertex]);",
+			"    }",
+			"    // 頂点 x, y を併合する : すでに x, yが同じ集合に属しているなら false を返す",
+			"    bool unite(int x, int y){",
+			"        int root_x = rootOf(x);",
+			"        int root_y = rootOf(y);",
+			"        if(root_x == root_y) return false;",
+			"        if(Size[root_x] < Size[root_y]) std::swap(root_x, root_y);",
+			"        Parent[root_y] = root_x; Size[root_x] += Size[root_y]; numberOfSets--;",
+			"        return true;",
+			"    }",
+			"    // 頂点 x, y が同じ集合に属しているかを判定する関数",
+			"    inline bool sameSet(int x, int y){",
+			"        return rootOf(x) == rootOf(y);",
+			"    }",
+			"    // 属している集合の要素数を返す関数",
+			"    inline int setSize(int vertex){",
+			"        return Size[rootOf(vertex)];",
+			"    }",
+			"    // 集合の数を返す",
+			"    inline int getNumberOfSets(void){",
+			"        return numberOfSets;",
+			"    }",
+			"};"
+		],
+		"description": "UnionFind木"
+	},
+	"REP": {
+		"prefix": "REP",
+		"body": [
+			"for(int $1 = 0; $1 < $2; ++$1) $0"
+		],
+		"description": "繰り返し"
+	},
+	"rREP": {
+		"prefix": "rREP",
+		"body": [
+			"for(int $1 = $2 - 1; $1 >= 0; --$1) $0"
+		]
+	},
+	"AllRange": {
+		"prefix": "AllRange",
+		"body": [
+			"$1.begin(), $1.end()"
+		],
+		"description": "コンテナの全範囲"
+	},
+	"SORT": {
+		"prefix": "SORT",
+		"body":[
+			"std::sort($1.begin(), $1.end());"
+		],
+		"description": "逆順ソート"
+	},
+	"rSORT": {
+		"prefix": "rSORT",
+		"body":[
+			"std::sort($1.begin(), $1.end(), std::greater<$2>());"
+		],
+		"description": "逆順ソート"
+	},
+	"coordinate_compression": {
+		"prefix": "coordinate_compression",
+		"body": [
+			"// 座標圧縮を行う簡易クラス",
+			"template <typename element_type> class coordinate_compression{",
+			"private:",
+			"    std::vector<element_type> compressed; // ソート & 座標圧縮済の配列",
+			"public:",
+			"    // コンストラクタ",
+			"    coordinate_compression(std::vector<element_type>& A){",
+			"        compressed = A; std::sort(compressed.begin(), compressed.end());",
+			"        compressed.erase(std::unique(compressed.begin(), compressed.end()), compressed.end());",
+			"    }",
+			"    // 配列で val の値(インデックス)を求める (0-indexed) | 存在しない値を入れた場合にはうまく動かないことに注意",
+			"    unsigned int at(const element_type& val) const noexcept{",
+			"        return std::lower_bound(compressed.begin(), compressed.end(), val) - compressed.begin();",
+			"    }",
+			"};"
+		]
+	}
+}
