@@ -1,4 +1,4 @@
-// verified in : https://judge.yosupo.jp/submission/4260
+// verified in : https://judge.yosupo.jp/submission/4296
 #include <cstdio>
 #include <vector>
 #include <tuple>
@@ -32,13 +32,23 @@ private:
     static constexpr edge_type inf_edge = edge_type(inf_dist, UINT32_MAX);
 
     // 2^k ≤ x なる最大の k を返す
-    inline unsigned int getLogOf(unsigned int x) const noexcept {
-        return 31 - __builtin_clz(x);
-    }       
+    static unsigned int getLogOf(unsigned int x) noexcept {
+        #ifdef __has_builtin
+            return 31 - __builtin_clz(x);
+        #else
+            unsigned int res = 0;
+            if(x >> 16){x >>= 16; res += 16;}
+            if(x >> 8) {x >>= 8; res += 8;}
+            if(x >> 4) {x >>= 4; res += 4;}
+            if(x >> 2) {x >>= 2; res += 2;}
+            return res +  (x >> 1);
+        #endif
+    }
     // [l, r) の最小値を返す
     inline rmq_type getMin(unsigned int l, unsigned int r) const noexcept {
-        unsigned int idx = getLogOf(r - l);
-        return (RmQ_data[l][idx] < RmQ_data[r - (1U << idx)][idx]) ? RmQ_data[l][idx] : RmQ_data[r - (1U << idx)][idx];
+        const unsigned int idx = getLogOf(r - l);
+        const unsigned int rr  = r - (1U << idx);
+        return (RmQ_data[idx][l] < RmQ_data[idx][rr]) ? RmQ_data[idx][l] : RmQ_data[idx][rr];
     }
 public:
     // コンストラクタ : 初期化を忘れずに！
@@ -107,19 +117,20 @@ public:
         const unsigned int length = eulerTour.size();
         unsigned int logLen = 0;
         while((1U << logLen) < length) ++logLen;
-        RmQ_data.assign(length, std::vector<rmq_type>(logLen + 1));
-        for(unsigned int i = 0; i < length ; ++i) RmQ_data[i][0] = rmq_type(depth[eulerTour[i]], eulerTour[i]);
+        RmQ_data.assign(logLen + 1, std::vector<rmq_type>(length));
+        for(unsigned int i = 0; i < length ; ++i) RmQ_data[0][i] = rmq_type(depth[eulerTour[i]], eulerTour[i]);
         for(unsigned int k = 0; k < logLen ; ++k){
-            for(unsigned int i = 0; i < length; ++i){
-                unsigned int j = i + (1U << k); if(j > length - 1) j = length - 1;
-                RmQ_data[i][k + 1] = (RmQ_data[i][k] < RmQ_data[j][k]) ? RmQ_data[i][k] : RmQ_data[j][k];
+            const unsigned int boundary = length - (1U << k); // 2^k ≤ length
+            for(unsigned int i = 0, j = (1U << k); i < boundary; ++i, ++j){
+                RmQ_data[k + 1][i] = (RmQ_data[k][i] < RmQ_data[k][j]) ? RmQ_data[k][i] : RmQ_data[k][j];
+            }
+            for(unsigned int i = boundary; i < length; ++i){
+                RmQ_data[k + 1][i] = (RmQ_data[k][i] < RmQ_data[k][length - 1]) ? RmQ_data[k][i] : RmQ_data[k][length - 1];
             }
         }
-
         doneInitialized = true;
     }
 };
-
 /*
 int main(void){
     unsigned int n, q; MIO::cin >> n >> q;

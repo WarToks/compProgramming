@@ -1,4 +1,4 @@
-// verified in https://judge.yosupo.jp/submission/4245
+// verified in https://judge.yosupo.jp/submission/4294
 #include <cstdio>
 #include <vector>
 #include <functional>
@@ -16,23 +16,42 @@ private:
     std::vector<std::vector<element_t>> data;
 
     // 2^k ≤ x なる最大の k を返す
-    inline unsigned int getLogOf(unsigned int x) const noexcept {
-        return 31 - __builtin_clz(x);
+    static unsigned int getLogOf(unsigned int x) noexcept {
+        #ifdef __has_builtin
+            return 31 - __builtin_clz(x);
+        #else
+            unsigned int res = 0;
+            if(x >> 16){x >>= 16; res += 16;}
+            if(x >> 8) {x >>= 8; res += 8;}
+            if(x >> 4) {x >>= 4; res += 4;}
+            if(x >> 2) {x >>= 2; res += 2;}
+            return res + (x >> 1);
+        #endif
     }
 
 public:
     // コンストラクタ
-    RangeMinimumQuery_static(std::vector<element_t>& A, const element_t inf):inf(inf){ init(A); }
+    RangeMinimumQuery_static(const std::vector<element_t>& A, const element_t inf):inf(inf){ 
+        initialize(A.cbegin(), A.cend());
+    }
+    template <class InputIterator>
+    RangeMinimumQuery_static(InputIterator first, InputIterator last, const element_t inf):inf(inf) {
+        initialize(first, last);
+    }
     // 初期化
-    void init(std::vector<element_t>& A){
-        length = A.size(); logLen = 0;
+    template <class InputIterator>
+    void initialize(const InputIterator first, const InputIterator last){
+        length = last - first; logLen = 0;
         while((1U << logLen) < length) ++logLen;
-        data.assign(length, std::vector<element_t>(logLen + 1));
-        for(unsigned int i = 0 ; i < length; ++i) data[i][0] = A[i];
+        data.assign(logLen + 1, std::vector<element_t>(length));
+        data[0].assign(first, last);
         for(unsigned int k = 0 ; k < logLen; ++k){
-            for(unsigned int i = 0; i < length; ++i){
-                unsigned int j = i + (1U << k); if(j > length - 1) j = length - 1;
-                data[i][k+1] = Compare_t()(data[i][k], data[j][k]) ? data[i][k] : data[j][k];
+            const unsigned int boundary = length - (1U << k); // 2^k ≤ length
+            for(unsigned int i = 0, j = (1U << k); i < boundary; ++i, ++j) {
+                data[k+1][i] = Compare_t()(data[k][i], data[k][j]) ? data[k][i] : data[k][j];
+            }
+            for(unsigned int i = boundary; i < length; ++i){
+                data[k+1][i] = Compare_t()(data[k][i], data[k][length-1]) ? data[k][i] : data[k][length];
             }
         }
     }
@@ -40,10 +59,12 @@ public:
     // [l, r) の最小値を返す
     inline element_t getMin(unsigned l, unsigned r) const noexcept {
         if(l >= r) return inf;
-        unsigned int idx = getLogOf(r - l);
-        return Compare_t()(data[l][idx], data[r - (1U << idx)][idx]) ? data[l][idx] : data[r - (1U << idx)][idx];
+        const unsigned int idx = getLogOf(r - l);
+        const unsigned int rr  = r - (1U << idx);
+        return Compare_t()(data[idx][l], data[idx][rr]) ? data[idx][l] : data[idx][rr];
     }
 };
+
 
 /*
 int main(void){
