@@ -1,3 +1,4 @@
+#include <vector>
 
 constexpr long  long int inf = 1e18 + 334 + 810 + 1919;
 
@@ -93,9 +94,3 @@ public:
     const_itr_type cbegin(void) const noexcept{ return vec.cbegin(); }
     const_itr_type cend(void)   const noexcept{ return vec.cend(); }
 };
-
-
-int main(void){
-
-    return 0;
-}

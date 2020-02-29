@@ -1,4 +1,4 @@
-#include <iostream>
+#include <cstdio>
 
 template <size_t N> class Primes{
 private:
