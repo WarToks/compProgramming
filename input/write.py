@@ -7,7 +7,7 @@ with open(path_to_input_file, mode = 'w'):
     pass
 
 with open(path_to_input_file, mode='a') as the_file: # 追記
-    n = 2 
+    n = 10 ** 3
     the_file.write(str(n) + '\n')
-    out = ['z' for _ in range(n)]
+    out = ['a' * n for _ in range(n)]
     the_file.write('\n'.join(out))

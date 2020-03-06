@@ -26,8 +26,8 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/src/main",
-            //"args": [],
-            "args": ["<", "{workspaceFolder}/input/input01.txt"],
+            "args":[],
+            "stdio": ["${workspaceFolder}/input/input01.txt", null, null],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "AtCoder"
         }

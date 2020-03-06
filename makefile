@@ -1,6 +1,6 @@
 #  Kpro_C++
-Compiler           =   clang++
-#Compiler		   =   g++-9
+#Compiler           =   clang++
+Compiler		   =   g++-9
 Compile_Version    =   -std=gnu++1z
 Optimization       =   -O3
 Extra_Option	   =   -Wall

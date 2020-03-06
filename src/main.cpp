@@ -61,7 +61,51 @@ namespace MyInputAndOutput{
             scanf("%s", str_arg); return *this;
         }
         inline const user_input& operator >> (char& char_arg) const {
-            scanf("%*c%c", &char_arg); return *this;
+            //scanf("%*c%c", &char_arg); return *this;
+            scanf(" %c", &char_arg); return *this;
+        }
+        inline const user_input& operator >> (std::string& str_arg) const {
+            /*  < definition of getchar >
+                reference
+                MacOS   : https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/getchar.3.html
+                Windows : https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/getchar-nolock-getwchar-nolock?view=vs-2019
+                Linux   : https://linux.die.net/man/3/unlocked_stdio 
+                Ubuntu  : http://manpages.ubuntu.com/manpages/trusty/man3/getchar_unlocked.3posix.html
+            */
+
+            #if defined(__APPLE__)
+                #define DAGGER_GETCHAR_UNLOCKED_DAGGER getchar_unlocked
+            #elif defined(_WIN32) || defined(_WIN64)
+                #define DAGGER_GETCHAR_UNLOCKED_DAGGER _getchar_nolock
+            #elif defined(__linux) 
+                #if _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _POSIX_SOURCE || _BSD_SOURCE || _SVID_SOURCE
+                    #define DAGGER_GETCHAR_UNLOCKED_DAGGER getchar_unlocked
+                #else
+                    #define DAGGER_GETCHAR_UNLOCKED_DAGGER getchar
+                #endif
+            #else
+                #define DAGGER_GETCHAR_UNLOCKED_DAGGER getchar
+            #endif
+
+            // 計算本体
+            str_arg.erase();
+            char c; while(true){ 
+                c = DAGGER_GETCHAR_UNLOCKED_DAGGER();
+                if(c == EOF) return *this;
+                if(c != '\n' and c != ' ' and c != '\t') break;
+            }
+            constexpr std::string::size_type buffer_size = 128; 
+            char buffer_input[buffer_size]; std::string::size_type buffer_length = 0;
+            do{
+                buffer_input[buffer_length++] = c;
+                if(buffer_length == buffer_size){
+                    buffer_length = 0; str_arg.append(buffer_input, buffer_size);
+                }
+                c = DAGGER_GETCHAR_UNLOCKED_DAGGER();
+            } while(c != EOF and c != '\n' and c != ' ' and c != '\t');
+            str_arg.append(buffer_input, buffer_length);
+            #undef DAGGER_GETCHAR_UNLOCKED_DAGGER
+            return *this;
         }
         template <typename S, typename T>
         inline const user_input& operator >>(std::pair<S, T>& pair_arg) const{
@@ -69,7 +113,8 @@ namespace MyInputAndOutput{
         }
         template <typename T>
         inline const user_input& operator >>(std::vector<T>& vec) const {
-            for(T& ele : vec) (*this) >> ele; return *this;
+            for(T& ele : vec) (*this) >> ele; 
+            return *this;
         }
     } cin;
 
@@ -110,6 +155,9 @@ namespace MyInputAndOutput{
         }
         inline const user_output& operator << (const char* str_arg) const {
             fputs(str_arg, stdout); return *this;
+        }
+        inline const user_output& operator << (const std::string& str_arg) const {
+            fputs(str_arg.c_str(), stdout); return *this;
         }
         inline const user_output& operator << (void(* const func_arg)(void)) const {
             func_arg(); return *this;
@@ -161,12 +209,9 @@ template <class T> std::vector<int> z_algorithm(const T &str) {
     return resOfCP;
 } 
 
-
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 int main(void){
-
+   
     return 0;
 }
