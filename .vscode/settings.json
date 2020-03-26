@@ -81,4 +81,17 @@
         "filesystem": "cpp"
     },
     "C_Cpp.dimInactiveRegions": true
+
+    /*,"editor.tokenColorCustomizations": {
+        "textMateRules": [
+            {
+                "scope": "entity.name.type",
+                "settings": {
+                    "foreground": "#FF0000",
+                    "fontStyle": "italic bold underline"
+                }
+            }
+        ]
+    }
+    */
 }

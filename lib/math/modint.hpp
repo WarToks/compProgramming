@@ -25,6 +25,9 @@ template <unsigned int modulus> struct modint{
         val = (unsigned long long int)(val) * other.inverse() % modulus;
         return *this;
     }
+    constexpr bool operator == (const modint<modulus> other) const noexcept {
+        return val == other.val;
+    }
     constexpr modint operator +(const modint<modulus> v)const noexcept{
         return modint<modulus>(*this) += v;
     }

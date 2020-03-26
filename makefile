@@ -2,8 +2,8 @@
 #Compiler           =   clang++
 Compiler		   =   g++-9
 Compile_Version    =   -std=gnu++1z
-Optimization       =   -O3
-Extra_Option	   =   -Wall
+Optimization       =   -O2
+#Extra_Option	   =   -Wall
 Target_Program     =   src/main.cpp
 Executable_File    =   src/main
 Input_File01       =   input/input01.txt
