@@ -27,17 +27,15 @@ std::complex<precision> fourier_inverse_transform(const std::vector<std::complex
 }
 
 
-
-template <class precision = double>
-class FFT{
+template <class precision = double> class FFT{
 private:
     using number_type = std::complex<precision>;
-
+ 
     static constexpr precision PI_VALUE = static_cast<precision>(3.1415926535897932384626433832795028841971);
-
+ 
     std::vector<number_type> omega;
     unsigned int omega_k; //omega[idx] = exp(i * idx π/2^(omega_k))
-
+ 
     static unsigned int bitreverse(unsigned int n){
         #ifdef __has_builtin
             #if __has_builtin(__builtin_bitreverse32)
@@ -68,40 +66,39 @@ private:
         for(unsigned int k = 1, Nk = N; k < N; k <<= 1, Nk >>= 1){
             const precision theta = PI_VALUE / Nk;
             const number_type w( std::cos(theta), -std::sin(theta) );
-
+ 
             for(unsigned int i = k; i < N; i += k) for(unsigned int j = 0; j < k; ++j) omega[i++] *= w;
         }
     }
 public:
-
+ 
     // 2^nの長さの配列に対し高速フーリエ変換を実行する関数 : 2^n ≤ A.size() である必要がある
     std::vector<number_type> fft(const std::vector<number_type>& A, const unsigned int n){
         const unsigned int N = 1 << n; 
         assert(A.size() <= N);
-
+ 
         std::vector<number_type> res(N, 0);{
             const unsigned int len = A.size(); 
             for(unsigned int i = 0; i < len; ++i) res[i] = A[i]; // 0 埋め
         }
         set_omega(n);
-
+ 
         for(unsigned int i = 0; i < N; ++i){
             unsigned int j = bitreverse(i) >> (32 - n);
-            if(i < j){ std::swap(res[i], res[j]);/* std::swap(omega[i], omega[j]); */}
+            if(i < j) std::swap(res[i], res[j]);
         }
-
-        for(unsigned int len1 = 1, len2 = 2; len1 < N; len1 <<= 1, len2 <<= 1){
+ 
+        for(unsigned int len1 = 1, len2 = 2, seg_num = N; len1 < N; len1 <<= 1, len2 <<= 1, seg_num >>= 1){
             for(unsigned int begin_idx1 = 0, begin_idx2 = len1; begin_idx1 < N; begin_idx1 += len2, begin_idx2 += len2){
-                for(unsigned int idx = 0; idx < len1; ++idx){
-                    const unsigned int t = (N / len1) * idx;
-                    res[begin_idx2 + idx] = res[begin_idx1 + idx] - omega[t] * res[begin_idx2 + idx];
-                    res[begin_idx1 + idx] = res[begin_idx1 + idx] + res[begin_idx1 + idx] -       res[begin_idx2 + idx];
+                for(unsigned int idx = 0, index_1 = begin_idx1, index_2 = begin_idx2, ptr = 0; idx < len1; ++idx, ++index_1, ++index_2, ptr += seg_num){
+                    res[index_2] = res[index_1] - omega[ptr] * res[index_2];
+                    res[index_1] = res[index_1] + res[index_1] - res[index_2];
                 }
             }
         }
         return res;
     }
-
+ 
     // {Ai}_{i=0}^{n-1}, {Bi}_{i=0}^{m-1} に対して畳み込み
     // Ck = ∑_{i + j = k} Ai * Bj を計算する
     std::vector<number_type> convolve(const std::vector<number_type>& A, const std::vector<number_type>& B){
@@ -138,3 +135,4 @@ public:
     }
     FFT(void):omega_k(0){}
 };
+ 

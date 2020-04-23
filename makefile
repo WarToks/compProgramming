@@ -3,7 +3,8 @@
 Compiler		   =   g++-9
 Compile_Version    =   -std=gnu++1z
 Optimization       =   -O2
-#Extra_Option	   =   -Wall
+Extra_Option	   =   -Wall 
+Extra_Option2     =   -D_GLIBCXX_DEBUG # 強めのデバック : 遅いらしい
 Target_Program     =   src/main.cpp
 Executable_File    =   src/main
 Input_File01       =   input/input01.txt
@@ -16,7 +17,7 @@ Writer_Python	   =   input/write.py
 All       : $(Executable_File)
 
 $(Executable_File) : $(Target_Program)
-	$(Compiler) $(Compile_Version) $(Optimization) $(Extra_Option) -o $(Executable_File) $(Target_Program)
+	$(Compiler) $(Compile_Version) $(Optimization) $(Extra_Option) $(Extra_Option2) -o $(Executable_File) $(Target_Program)
 
 # 実行可能ファイル main の実行
 run       :  $(Executable_File)

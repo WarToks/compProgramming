@@ -165,6 +165,11 @@ public:
 // 3 * 2^30 + 1 → 原始根 5
 constexpr NumberTheoreticTransform<3, 30, 5> NTT;
 
+
+
+// 998,244,353 = 119 * 2^23 + 1 : 原始根 3
+constexpr NumberTheoreticTransform<119, 23, 3> NTT2;
+
 int main(void){
     unsigned int n; cin >> n;
 
